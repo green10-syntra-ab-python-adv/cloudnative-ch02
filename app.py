@@ -75,6 +75,7 @@ def list_user(user_id):
 @app.route('/api/v1/users', methods=['POST'])
 def create_user():
     if not request.json or not 'username' in request.json or not 'email' in request.json or not 'password' in request.json:
+        # print(request.json)
         abort(400)
     user = {
         'username': request.json['username'],
@@ -100,7 +101,8 @@ def add_user(new_user):
     if len(data) != 0:
         abort(409)
     else:
-       cursor.execute("insert into users (username, email, password, full_name) values(?,?,?,?)",(new_user['username'],new_user['email'], new_user['password'], new_user['name']))
+       cursor.execute("insert into users (username, email, password, full_name) values(?,?,?,?)",
+                      (new_user['username'],new_user['email'], new_user['password'], new_user['name']))
        conn.commit()
        return "Success"
     conn.close()
@@ -110,8 +112,8 @@ def add_user(new_user):
 @app.route('/api/v1/users/<int:user_id>', methods=['PUT'])
 def update_user(user_id):
     user = {}
-    # if not request.json:
-    #     abort(400)
+    if not request.json:
+        abort(400)
     user['id']=user_id
     key_list = request.json.keys()
     for i in key_list:
@@ -132,11 +134,11 @@ def upd_user(user):
         abort(404)
     else:
         key_list=user.keys()
-        for i in key_list:
-            if i != "id":
-                print (user, i)
-                # cursor.execute("UPDATE users set {0}=? where id=? ", (i, user[i], user['id']))
-                cursor.execute("""UPDATE users SET {0} = ? WHERE id = ?""".format(i), (user[i], user['id']))
+        for key in key_list:
+            if key != "id":
+                print (user, key)
+                cursor.execute("""UPDATE users SET {0} = ? WHERE id = ?"""
+                               .format(key), (user[key], user['id']))
                 conn.commit()
     return "Success"
 
