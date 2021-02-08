@@ -1,18 +1,25 @@
 from flask import Flask, request, jsonify
-from flask import abort
-from flask import make_response
+from flask import abort, make_response
 from time import gmtime, strftime
+
 import sqlite3
+import os.path
+
+# We will need to find the absolute path of our script
+# because by default sqlite tries to find mydb.db in our home directory
+# if it is not there, an empty database will be created, which is useless here
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR,"mydb.db")
 
 app = Flask(__name__)
 
 
 @app.route("/api/v1/info")
 def home_index():
-    conn = sqlite3.connect('mydb.db')
-    print ("Opened database successfully");
+    conn = sqlite3.connect(DB_PATH)
+    print ("Opened the following database successfully: ", conn);
     api_list=[]
-    cursor = conn.execute("SELECT buildtime, version, methods, links from apirelease")
+    cursor = conn.execute("SELECT buildtime, version, methods, links from main.apirelease")
     for row in cursor:
         api = {}
         api['version'] = row[0]
@@ -30,7 +37,7 @@ def get_users():
 
 
 def list_users():
-    conn = sqlite3.connect('mydb.db')
+    conn = sqlite3.connect(DB_PATH)
     print ("Opened database successfully");
     api_list=[]
     cursor = conn.execute("SELECT username, full_name,  email, password, id from users")
@@ -52,7 +59,7 @@ def get_user(user_id):
 
 
 def list_user(user_id):
-    conn = sqlite3.connect('mydb.db')
+    conn = sqlite3.connect(DB_PATH)
     print ("Opened database successfully");
     api_list=[]
     cursor=conn.cursor()
@@ -92,7 +99,7 @@ def invalid_request(error):
 
 
 def add_user(new_user):
-    conn = sqlite3.connect('mydb.db')
+    conn = sqlite3.connect(DB_PATH)
     print ("Opened database successfully");
     api_list=[]
     cursor=conn.cursor()
@@ -124,7 +131,7 @@ def update_user(user_id):
 
 
 def upd_user(user):
-    conn = sqlite3.connect('mydb.db')
+    conn = sqlite3.connect(DB_PATH)
     print ("Opened database successfully");
     cursor=conn.cursor()
     cursor.execute("SELECT * from users where id=? ",(user['id'],))
@@ -149,7 +156,7 @@ def delete_user(user_id):
 
 
 def del_user(del_user):
-    conn = sqlite3.connect('mydb.db')
+    conn = sqlite3.connect(DB_PATH)
     print ("Opened database successfully");
     cursor=conn.cursor()
     cursor.execute("SELECT * from users where id=? ",(del_user,))
@@ -166,7 +173,7 @@ def del_user(del_user):
 
 def list_tweet(user_id):
     print (user_id)
-    conn = sqlite3.connect('mydb.db')
+    conn = sqlite3.connect(DB_PATH)
     print ("Opened database successfully");
     api_list=[]
     cursor=conn.cursor()
@@ -188,7 +195,7 @@ def list_tweet(user_id):
 
 
 def list_tweets():
-    conn = sqlite3.connect('mydb.db')
+    conn = sqlite3.connect(DB_PATH)
     print ("Opened database successfully");
     api_list=[]
     cursor=conn.cursor()
@@ -215,7 +222,7 @@ def list_tweets():
     return jsonify({'tweets_list': api_list})
 
 def add_tweet(new_tweets):
-    conn = sqlite3.connect('mydb.db')
+    conn = sqlite3.connect(DB_PATH)
     print ("Opened database successfully");
     cursor=conn.cursor()
     cursor.execute("SELECT * from users where username=? ",(new_tweets['username'],))
