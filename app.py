@@ -170,28 +170,28 @@ def del_user(del_user):
        return "Success"
 
 
-
-def list_tweet(user_id):
-    print (user_id)
+def list_tweet(username):
+    print (username, type(username))
     conn = sqlite3.connect(DB_PATH)
     print ("Opened database successfully");
     api_list=[]
     cursor=conn.cursor()
-    cursor.execute("SELECT * from tweets  where id=?",(user_id,))
+    cursor.execute("SELECT * from tweets  where username=?",(username,))
     data = cursor.fetchall()
     print (data)
     if len(data) == 0:
         abort(404)
     else:
-
-        user = {}
-        user['id'] = data[0][0]
-        user['username'] = data[0][1]
-        user['body'] = data[0][2]
-        user['tweet_time'] = data[0][3]
-
+        the_tweets = list()
+        for tweet in data:
+            the_tweet = dict()
+            the_tweet['id']=tweet[0]
+            the_tweet['username'] = tweet[1]
+            the_tweet['body'] = tweet[2]
+            the_tweet['tweet_time'] = tweet[3]
+            the_tweets.append(the_tweet)
     conn.close()
-    return jsonify(user)
+    return jsonify(the_tweets)
 
 
 def list_tweets():
@@ -220,6 +220,7 @@ def list_tweets():
     conn.close()
     print (api_list)
     return jsonify({'tweets_list': api_list})
+
 
 def add_tweet(new_tweets):
     conn = sqlite3.connect(DB_PATH)
@@ -254,9 +255,9 @@ def add_tweets():
     return  jsonify({'status': add_tweet(user_tweet)}), 201
 
 
-@app.route('/api/v2/tweets/<int:id>', methods=['GET'])
-def get_tweet(id):
-    return list_tweet(id)
+@app.route('/api/v2/tweets/<string:username>', methods=['GET'])
+def get_tweet(username):
+    return list_tweet(username)
 
 
 @app.errorhandler(404)
@@ -267,6 +268,7 @@ def resource_not_found(error):
 @app.errorhandler(409)
 def user_found(error):
     return make_response(jsonify({'error': 'Conflict! Record exist'}), 409)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
